@@ -1,0 +1,127 @@
+# 1) main.py
+This script accepts several parameters to execute tre main function: training a model, exporting it for ARM64 deployment and computing an image representation.
+main.py ralys on a configuration file, *experiment_presets.py*, where the training and modl parameters are defined.
+The available parameters can be checked via: 
+
+```
+main.py -h
+```
+
+## EXPERIMENTAL PRESETS
+
+1) alexnet_TRO (Baseline)
+2) binarynet_TRO
+3) shallownet_TRO
+4) floppynet_TRO
+
+The presets are defined in *experiment_presets.py*. 
+For example:
+
+```
+FNet_TRO = 'floppynet_TRO'
+params['model_name'] = FNet_TRO 
+
+## TRAINING DATA ###
+## CHANGE THE PATHs ACCORDINGLY WITH YOUR NEEDS ##
+params['training_data'] = D.training_datasets[D.PLACES365]['training_path']
+# Set validation data to None to split the training data
+params['validation_data'] = D.training_datasets[D.PLACES365]['validation_path']
+# val split is ignored if a path to validation data is given
+params['val_split'] = 0.4
+####################
+
+params['classes'] = D.training_datasets[D.PLACES365]['nClass']
+params['l_rate'] = 5e-4
+params['batch_size'] = 24
+params['epochs'] = 150
+params['model_save_dir'] = model_save_dir
+params['out_layer'] = 'pool5'
+```
+Change them accordingly with your needs. 
+You can either set a path or define/change the data presets in *dataset_presets.py* (the **D** you can see in the sample code above).
+
+
+
+## WORKING FOLDER
+The default is: *./output/trained_models*
+It can be changed via `-models_save_dir` parameter
+For example, to train FloppyNet with the preset *floppynet_TRO* using a different working folder, the command is as follows:
+```
+python3 main.py -M training --preset floppynet_TRO --models_save_dir C:\mymodels
+```
+
+## Training a model ###
+```
+python3 main.py -M training --preset <PRESET_OF_YOUR_CHOICE>
+```
+
+## Exporting a model ###
+
+__As a H5 keras model__
+```
+python3 main.py -M export --format H5 --preset <PRESET_OF_YOUR_CHOICE>
+```
+
+__As a tflite model for RPI4__
+```
+python3 main.py -M export --format arm64 --preset <PRESET_OF_YOUR_CHOICE>
+```
+
+__both formats at the same time__
+```
+python3 main.py -M export --format all --preset <PRESET_OF_YOUR_CHOICE>
+```
+
+## Computing an image representation
+```
+python3 main.py -M descriptor --target_images PATH_TO_YOUR_IMAGE_OR_IMAGE_FOLDER --output_features_file PATH_TO_OUT_FILE --preset <PRESET_OF_YOUR_CHOICE>
+```
+
+## Computing an image representation with a H5 model
+```
+python3 main.py -M descriptor --target_images PATH_TO_YOUR_IMAGE_OR_IMAGE_FOLDER --output_features_file PATH_TO_OUT_FILE --h5_model PATH_TO_YOUR_H5_MODEL_FILE
+```
+
+## Image pair distance
+```
+python3 main.py -M distance --dtype L2 -img1 PATH_IMAGE_1 -img2 PATH_IMAGE_2 --preset <PRESET_OF_YOUR_CHOICE>
+```
+
+## Image pair distance with a H5 model
+```
+python3 main.py -M distance --dtype L2 -img1 PATH_IMAGE_1 -img2 PATH_IMAGE_2 --h5_model PATH_TO_YOUR_H5_MODEL_FILE
+```
+
+## Query a dataset
+ ```
+ python3 main.py -M --top_n HOW_MANY_IMAGES_TO_GET --dtype [COS|L2] --img1 PATH_TO_QUERY_IMAGE_1 --preset <PRESET_OF_YOUR_CHOICE>
+ ```
+
+## Query a dataset with a H5 model
+ ```
+ python3 main.py -M --top_n HOW_MANY_IMAGES_TO_GET --dtype [COS|L2] --img1 PATH_TO_QUERY_IMAGE_1 --ref_dataset PATH_TO_YOUR_IMAGE_OR_IMAGE_FOLDER --h5_model PATH_TO_YOUR_H5_MODEL_FILE
+ ```
+ For example:
+ 
+ ```
+ python3 main.py -M --top_n 5 --dtype L2 --img1 datasets/nordland_sample/winter/17901.jpg --ref_dataset datasets/nordland_sample/winter --h5_model TRO_pretrained/floppyNet_places365.h5
+ ```
+
+## Computing an image representation from an TFLITE model
+You need a RPI4 installed with a 64-bit OS (e.g. Ubuntu 20.04) and the lce_cnn executable available in TRO_pretrained/RPI4 folder of this project 
+
+## CPU_ONLY mode
+Use the flag `--cpu_only` as follows:
+```
+python3 main.py -M descriptor --cpu_only --target_images PATH_TO_YOUR_IMAGE_OR_IMAGE_FOLDER --output_features_file PATH_TO_OUT_FILE --preset <PRESET_OF_YOUR_CHOICE>
+```
+
+More details can be found into the `scripts` folder.
+
+
+# 2) lce_cnn
+The pretrained model for RPI4 are available in the folder `TRO_pretrained/RPI4`.
+In the same directory are available our BNN executable based on LCE and the source code. If you are interested in compiling our source code or your version, I suggest compiling it inside the Doker provided byLarq progject](https://docs.larq.dev/compute-engine/build/docker/).
+
+# 3) 'output' folder
+This directory is populated on training. If you intentend only to run pretrained model, you don't need this folder.

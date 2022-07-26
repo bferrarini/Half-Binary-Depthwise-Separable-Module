@@ -1,4 +1,4 @@
 These are the model used in our paper.
 
-For FloppyNet, plese refer to [https://github.com/bferrarini/FloppyNet_TRO/tree/master/FloppyNet_TRO/TRO_pretrained]
+For FloppyNet, you can download the model we used from https://github.com/bferrarini/FloppyNet_TRO/tree/master/FloppyNet_TRO/TRO_pretrained.
   

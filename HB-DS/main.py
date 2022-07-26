@@ -43,6 +43,7 @@ if __name__ == '__main__':
                 min_l_rete = params['min_l_rate'],
                 patience = params['patience'],
                 factor = params['factor'],
+                layers = params['layer_config'],
                 model_save_dir = params['model_save_dir'] if args.models_save_dir is None else args.models_save_dir 
             )
     # MODEL EXPORT

@@ -57,6 +57,7 @@ if __name__ == '__main__':
             model_name = params['model_name'],
             out_layer = params['out_layer'],
             training_classes = params['classes'],
+            layers = params['layer_config'],
             out_dir = os.path.join(params['model_save_dir'], params['model_name'], 'export'),
             model_format = args.export_format,
             model_save_dir = params['models_save_dir'] if args.models_save_dir is None else args.models_save_dir
@@ -75,6 +76,7 @@ if __name__ == '__main__':
                     images = args.target_images, 
                     out_file = args.features_out,
                     out_layer = params['out_layer'],
+                    layers = params['layer_config'],
                     verb = True,
                     model_save_dir = params['model_save_dir'] if args.models_save_dir is None else args.models_save_dir
                     )
@@ -91,6 +93,7 @@ if __name__ == '__main__':
                     image1 = args.image1, 
                     image2 = args.image2, 
                     dist_type = args.dtype,
+                    layers = params['layer_config'],
                     verb = True)
         elif not args.tr_preset is None: 
             params = experiments[args.tr_preset]
@@ -103,6 +106,7 @@ if __name__ == '__main__':
                     out_layer = params['out_layer'],
                     model_save_dir = params['model_save_dir'] if args.models_save_dir is None else args.models_save_dir,
                     dist_type = args.dtype,
+                    layers = params['layer_config'],
                     verb = True                
                 )
         else: 
@@ -134,6 +138,7 @@ if __name__ == '__main__':
                     out_layer = params['out_layer'],
                     model_save_dir = params['model_save_dir'] if args.models_save_dir is None else args.models_save_dir,
                     dist_type = args.dtype,
+                    layers = params['layer_config'],
                     verb = True    
                 )
         else: 

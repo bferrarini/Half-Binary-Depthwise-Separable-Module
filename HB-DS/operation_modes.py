@@ -56,7 +56,7 @@ def train(model_name,
           ):
     
     #Instantiate a model wrapper
-    model_wrapper = factory.get_model(model_name, training_classes, l_rate, resume, model_save_dir,depth_multi,min_l_rete,patience,factor)
+    model_wrapper = factory.get_model(model_name, training_classes, l_rate, resume, model_save_dir,depth_multi,min_l_rete,patience,factor, layers_configuration = layers)
     
     train_op(model_wrapper, 
              model_name = model_name,
@@ -73,6 +73,7 @@ def train(model_name,
 def export(
             model_name,
             training_classes, #for loading the model
+            layers,
             out_layer = 'pool5',
             flatten =  False, #False keeps the output layers as it is. True, returns a flatten feature map
             model_save_dir = os.path.join('.','output','trained_models'),
@@ -84,7 +85,7 @@ def export(
     import tensorflow as tf
     
     # Some of the parameters are unnecessary for exporting. Thus they are set arbitrary
-    model_wrapper = factory.get_model(model_name, training_classes = training_classes, l_rate = 10, resume = False, model_save_dir = model_save_dir)
+    model_wrapper = factory.get_model(model_name, training_classes = training_classes, l_rate = 10, resume = False, model_save_dir = model_save_dir, layers_configuration = layers)
     
     out_dir_ = os.path.join('output','trained_models', model_name, 'export') if out_dir is None else out_dir
     if not os.path.exists(out_dir_):
@@ -108,26 +109,36 @@ def export(
         sub_model.save(fn)
         print(f"{model_name} model saved at {fn}")
         
-    #PROTOTYPE for FP precision model deployment
+    #### PROTOTYPE for FP precision model deployment
+    #### No full precisin model in this reseales
+    
+    # if model_format == AP.ARM64 or model_format == AP.ALL:
+    #     if model_name == EX.FNet_FP: #TFLITE for regular deployment on ARM
+    #         converter = tf.lite.TFLiteConverter.from_keras_model(sub_model)
+    #         # #no optimization as we want AlexNet as a 32-bit model
+    #         # converter.optimizations = [tf.lite.Optimize.DEFAULT]
+    #         # converter.target_spec.supported_ops = [tf.lite.OpsSet.EXPERIMENTAL_TFLITE_BUILTINS_ACTIVATIONS_INT16_WEIGHTS_INT8]
+    #         tflite_model = converter.convert() 
+    #
+    #         fn = os.path.join(out_dir_, model_name + ".tflite")
+    #         with open(fn, 'wb') as f:
+    #             f.write(tflite_model)
+    #             print(f"{model_name} model for RPI4 is saved at {fn}")
+    #
+    #     else: #LCE for BNNs
+    #         fn = os.path.join(out_dir_, model_name + ".tflite")
+    #         with open(fn, "wb") as fb:
+    #             fb_bytes = lce.convert_keras_model(sub_model)
+    #             fb.write(fb_bytes)
+    #             print(f"{model_name} model for RPI4 is saved at {fn}")
+    
     if model_format == AP.ARM64 or model_format == AP.ALL:
-        if model_name == EX.FNet_FP: #TFLITE for regular deployment on ARM
-            converter = tf.lite.TFLiteConverter.from_keras_model(sub_model)
-            # #no optimization as we want AlexNet as a 32-bit model
-            # converter.optimizations = [tf.lite.Optimize.DEFAULT]
-            # converter.target_spec.supported_ops = [tf.lite.OpsSet.EXPERIMENTAL_TFLITE_BUILTINS_ACTIVATIONS_INT16_WEIGHTS_INT8]
-            tflite_model = converter.convert() 
-            
-            fn = os.path.join(out_dir_, model_name + ".tflite")
-            with open(fn, 'wb') as f:
-                f.write(tflite_model)
-                print(f"{model_name} model for RPI4 is saved at {fn}")
-            
-        else: #LCE for BNNs
-            fn = os.path.join(out_dir_, model_name + ".tflite")
-            with open(fn, "wb") as fb:
-                fb_bytes = lce.convert_keras_model(sub_model)
-                fb.write(fb_bytes)
-                print(f"{model_name} model for RPI4 is saved at {fn}")
+                
+        fn = os.path.join(out_dir_, model_name + ".tflite")
+        with open(fn, "wb") as fb:
+            fb_bytes = lce.convert_keras_model(sub_model)
+            fb.write(fb_bytes)
+            print(f"{model_name} model for RPI4 is saved at {fn}")
         
         
 def descriptor(
@@ -135,12 +146,13 @@ def descriptor(
         training_classes, #for loading the model
         images, 
         out_file,
+        layers,
         out_layer = 'pool5',
         model_save_dir = os.path.join('.','output','trained_models'),
         verb = False,
         ):
 
-    model_wrapper = factory.get_model(model_name, training_classes = training_classes, l_rate = 10, resume = False, model_save_dir = model_save_dir)
+    model_wrapper = factory.get_model(model_name, training_classes = training_classes, l_rate = 10, resume = False, model_save_dir = model_save_dir, layers_configuration = layers)
     
     model_wrapper.load()      
     
@@ -175,6 +187,7 @@ def descriptor_from_h5(
 def compute_pair_distance(
         image1, 
         image2, 
+        layers,
         model_name = None,
         training_classes = None,
         h5_fn = None,
@@ -192,7 +205,7 @@ def compute_pair_distance(
             model = tf.keras.models.load_model(h5_fn, compile=False)
             
         else:
-            model_wrapper = factory.get_model(model_name, training_classes = training_classes, l_rate = 10, resume = False, model_save_dir = model_save_dir)
+            model_wrapper = factory.get_model(model_name, training_classes = training_classes, l_rate = 10, resume = False, model_save_dir = model_save_dir, layers_configuration = layers)
             model_wrapper.load()      
             model = model_wrapper.get_inner_layer_by_name(out_layer, flatten=False)
               
@@ -220,6 +233,7 @@ def compute_pair_distance(
 def query_a_dataset(
         query_image, 
         reference_data_dir, 
+        layers,
         model_name = None,
         training_classes = None,
         h5_fn = None,
@@ -238,7 +252,7 @@ def query_a_dataset(
             model = tf.keras.models.load_model(h5_fn, compile=False)
             
         else:
-            model_wrapper = factory.get_model(model_name, training_classes = training_classes, l_rate = 10, resume = False, model_save_dir = model_save_dir)
+            model_wrapper = factory.get_model(model_name, training_classes = training_classes, l_rate = 10, resume = False, model_save_dir = model_save_dir, layers_configuration = layers)
             model_wrapper.load()      
             model = model_wrapper.get_inner_layer_by_name(out_layer, flatten=False)
         

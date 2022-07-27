@@ -17,7 +17,6 @@ def get_model(
             l_rate=1e-4, 
             resume = False, 
             model_save_dir = os.path.join('.','output','trained_models'),
-            depth_multi = 12,
             min_l_rete = 1e-6,
             patience = 1000,
             factor = 0.5,
